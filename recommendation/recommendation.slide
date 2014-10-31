@@ -1,0 +1,223 @@
+推荐分享
+powered by go.talks/present
+31 Oct 2014
+Tags: recommendation, mahout
+
+范海强
+DataCenter
+fhaiqiang@gmail.com
+http://being23.wordpress.com
+
+* 目录
+
+- 概念
+- 实例
+- 自己动手实现
+- mahout
+
+* 背景
+
+- 什么是推荐
+
+* 机制
+工作原理
+
+.image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image003.jpg
+
+数据源
+- 物品
+- 用户
+- 偏好（显式反馈 vs 隐式反馈）
+
+[[http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/][来源：探索推荐引擎内部的秘密，第 1 部分: 推荐引擎初探]]
+
+* 分类
+
+1. 是不是为不同的用户推荐不同的数据
+
+- 基于大众行为的推荐
+- 个性化推荐
+
+2. 推荐引擎的数据源
+
+- 基于人口统计学的推荐
+- 基于内容的推荐
+- 基于协同过滤的推荐
+
+3. 推荐模型的建立方式
+
+- 基于物品和用户本身的推荐
+- 基于关联规则的推荐
+- 基于模型的推荐
+
+* 基于人口统计学的推荐
+
+.image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image005.jpg
+
+优点
+
+- 简单，没有“冷启动”问题
+- 不依赖物品自身数据
+
+缺点
+
+- 粗暴，不够准确
+- 涉及敏感信息，例如这里的年龄
+
+* 基于内容的推荐
+
+.image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image007.jpg
+
+优点
+
+- 能很好建模用户口味，提高准确度
+
+缺点
+
+- 需要对物品进行分析和建模
+- 不考虑用户对物品的态度，仅仅物品自身属性
+- “冷启动”问题
+
+* 基于协同过滤的推荐
+
+原理：根据用户对物品的偏好，发现物品的相关性，或者用户的相关性，然后基于这些相关性，根据历史信息进行推荐。
+
+- 基于用户的协同过滤推荐
+	使用所有用户对物品或者信息的偏好，发现用户之间的相似度
+
+- 基于项目的协同过滤推荐
+	使用所有用户对物品或者信息的偏好，发现物品之间的相似度
+
+- 基于模型的协同过滤推荐
+	基于样本的用户喜好信息，训练一个推荐模型，然后根据实时的用户喜好的信息进行预测，计算推荐
+
+* 基于用户的协同过滤推荐
+
+.image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image009.jpg
+
+与 __基于人口统计学的推荐_ 的关系
+
+相似点
+
+- 计算用户相似度，并基于邻居用户群计算推荐
+
+不同点
+
+- 用户自身属性 vs 历史偏好数据
+
+* 基于项目的协同过滤推荐
+
+.image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image011.jpg
+
+与 __基于内容的推荐_ 的关系
+
+相似点
+
+- 计算物品相似度
+
+不同点
+
+- 物品自身属性 vs 用户历史偏好数据
+
+* 基于项目的协同过滤推荐 vs 基于用户的协同过滤推荐
+
+balabala
+
+* 基于物品的协同推荐 - 测试数据
+
+	1,101,5.0
+	1,102,3.0
+	1,103,2.5
+	2,101,2.0
+	2,102,2.5
+	2,103,5.0
+	2,104,2.0
+	3,101,2.5
+	3,104,4.0
+	3,105,4.5
+	3,107,5.0
+	4,101,5.0
+	4,103,3.0
+	4,104,4.5
+	4,106,4.0
+	5,101,4.0
+	5,102,3.0
+	5,103,2.0
+	5,104,4.0
+	5,105,3.5
+	5,106,4.0
+
+* 基于物品的协同推荐 - 计算物品相似度
+
+.image sim_mat.png
+
+* 基于物品的协同推荐 - 用户历史数据
+
+考虑用户1
+
+评分列表
+
+.image pref.png 126
+
+
+* 基于物品的协同推荐 - 推荐向量
+
+推荐向量等于协同矩阵与评分向量相乘
+
+.image rec_vec.png
+
+* 基于物品的协同推荐 - 归一化
+
+.image norm_formula.png
+
+- u表示用户
+- i表示用户还没有评分过的物品
+- N表示所有与i相似的物品
+
+	对于用户u来说，物品i的推荐值等于其与所有物品n的相似度和
+	用户u对物品n评分乘积的和除以所有物品n的相似度和
+
+* 基于物品的协同推荐 - 计算归一化向量
+
+协同矩阵的前三列对应求和
+
+.image norm_vec.png
+
+* 基于物品的协同推荐 - 计算推荐向量
+
+推荐值向量点除归一化向量
+
+.image rec_vec_norm.png
+
+* 基于用户的协同推荐
+
+.code -numbers recommmendations.py /START USER OMIT/,/END USER OMIT/
+
+* 基于物品的协同推荐
+
+.code -numbers recommmendations.py /START ITEM OMIT/,/END ITEM OMIT/
+
+
+* Title of slide or section (must have asterisk)
+
+Some Text
+
+** Subsection
+
+- bullets
+- more bullets
+
+*** Sub-subsection
+
+	Some More text
+
+	  Preformatted text
+
+	Further Text, including invocations like:
+
+* caption1
+
+
+
+* kanbujian
+Q&A
