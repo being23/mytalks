@@ -1,4 +1,5 @@
-推荐分享
+基于物品协同过滤推荐原理，计算过程及Mahout对该算法的实现和使用
+#一次关于协同过滤算法和Mahout的短暂
 powered by go.talks/present
 31 Oct 2014
 Tags: recommendation, mahout
@@ -18,6 +19,8 @@ http://being23.wordpress.com
 * 背景
 
 - 什么是推荐
+- 为什么要推荐
+- 如何推荐
 
 * 机制
 工作原理
@@ -28,8 +31,6 @@ http://being23.wordpress.com
 - 物品
 - 用户
 - 偏好（显式反馈 vs 隐式反馈）
-
-[[http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/][来源：探索推荐引擎内部的秘密，第 1 部分: 推荐引擎初探]]
 
 * 分类
 
@@ -151,13 +152,13 @@ balabala
 
 .image sim_mat.png
 
-* 基于物品的协同推荐 - 用户历史数据
+* 基于物品的协同推荐 - 用户评分数据
 
 考虑用户1
 
-评分列表
+评分向量
 
-.image pref.png 126
+.image pref.png 
 
 
 * 基于物品的协同推荐 - 推荐向量
@@ -174,8 +175,7 @@ balabala
 - i表示用户还没有评分过的物品
 - N表示所有与i相似的物品
 
-	对于用户u来说，物品i的推荐值等于其与所有物品n的相似度和
-	用户u对物品n评分乘积的和除以所有物品n的相似度和
+	对于用户u来说，物品i的推荐值等于其与所有物品n的相似度和用户u对物品n评分乘积的和除以所有物品n的相似度和
 
 * 基于物品的协同推荐 - 计算归一化向量
 
@@ -197,27 +197,14 @@ balabala
 
 .code -numbers recommmendations.py /START ITEM OMIT/,/END ITEM OMIT/
 
-
-* Title of slide or section (must have asterisk)
-
-Some Text
-
-** Subsection
-
-- bullets
-- more bullets
-
-*** Sub-subsection
-
-	Some More text
-
-	  Preformatted text
-
-	Further Text, including invocations like:
-
-* caption1
+* 自己实现
 
 
+* Mahout
 
-* kanbujian
-Q&A
+* 参考资料
+
+－ [[http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/][来源：探索推荐引擎内部的秘密，第 1 部分: 推荐引擎初探]]
+－ [[][]]
+* Q&A
+

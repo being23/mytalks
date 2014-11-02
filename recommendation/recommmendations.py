@@ -47,24 +47,31 @@ def topMatches(prefs,person,n=5,similarity=sim_pearson):
 
 // START USER OMIT
 def getRecommedations(prefs,person,similarity=sim_pearson):
-    totals={}
-    simSums={}
+    totals={};simSums={}
+    #遍历每一个用户
     for other in prefs:
+        #遍历到的用户是当前用户，跳过
         if other==person:continue
+        #不是当前用户，计算用户之间的相似度
         sim=similarity(prefs,person,other)
         if sim<=0:continue
+        #遍历用户的物品
         for item in prefs[other]:
+            #如果当前用户没有评价该物品
             if item not in prefs[person] or prefs[person][item]==0:
                 totals.setdefault(item,0)
+                #评价值与用户相似度加权 // HL
                 totals[item]+=prefs[other][item]*sim
                 simSums.setdefault(item,0)
+                #相似度和
                 simSums[item]+=sim
+    #对相似度归一化
     rankings=[(total/simSums[item],item) for item,total in totals.items()]
-
-    rankings.sort()
-    rankings.reverse()
+    #排序，降序，返回结果
+    rankings.sort();rankings.reverse()
     return rankings
 // END USER OMIT
+
 def transformPrefs(prefs):
     result={}
     for person in prefs:
@@ -95,16 +102,17 @@ def getRecommedationedItems(prefs,itemMatch,user):
     totalSim={}
     #遍历当前用户评论过的物品
     for(item,rating) in userRatings.items():
-        #遍历与当前物品相似的物品
+        #遍历每一个物品
         for(similarity,item2) in itemMatch[item]:
+            #如果item2用户评论过，跳过
             if item2 in userRatings:continue
-            #评价值与形似度的加权之和
+            #评价值与物品相似度的加权之和 // HL
             scores.setdefault(item2,0)
             scores[item2]+=similarity*rating
-            #全部相似度之和
+            #相似度和
             totalSim.setdefault(item2,0)
             totalSim[item2]+=similarity
-    #将每个合计值除以加权和，求出平均值
+    #对相似度归一化
     rankings=[(score/totalSim[item],item) for item,score in scores.items()]
     #排序，降序，返回结果
     rankings.sort()
