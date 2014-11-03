@@ -9,18 +9,21 @@ DataCenter
 fhaiqiang@gmail.com
 http://being23.wordpress.com
 
-* 目录
+
+* 概要
 
 - 概念
 - 实例
-- 自己动手实现
+- 分布式实现
 - mahout
+
 
 * 背景
 
 - 什么是推荐
 - 为什么要推荐
 - 如何推荐
+
 
 * 机制
 工作原理
@@ -31,6 +34,7 @@ http://being23.wordpress.com
 - 物品
 - 用户
 - 偏好（显式反馈 vs 隐式反馈）
+
 
 * 分类
 
@@ -51,6 +55,7 @@ http://being23.wordpress.com
 - 基于关联规则的推荐
 - 基于模型的推荐
 
+
 * 基于人口统计学的推荐
 
 .image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image005.jpg
@@ -64,6 +69,7 @@ http://being23.wordpress.com
 
 - 粗暴，不够准确
 - 涉及敏感信息，例如这里的年龄
+
 
 * 基于内容的推荐
 
@@ -79,6 +85,7 @@ http://being23.wordpress.com
 - 不考虑用户对物品的态度，仅仅物品自身属性
 - “冷启动”问题
 
+
 * 基于协同过滤的推荐
 
 原理：根据用户对物品的偏好，发现物品的相关性，或者用户的相关性，然后基于这些相关性，根据历史信息进行推荐。
@@ -91,6 +98,7 @@ http://being23.wordpress.com
 
 - 基于模型的协同过滤推荐
 	基于样本的用户喜好信息，训练一个推荐模型，然后根据实时的用户喜好的信息进行预测，计算推荐
+
 
 * 基于用户的协同过滤推荐
 
@@ -106,6 +114,7 @@ http://being23.wordpress.com
 
 - 用户自身属性 vs 历史偏好数据
 
+
 * 基于项目的协同过滤推荐
 
 .image http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/image011.jpg
@@ -120,9 +129,14 @@ http://being23.wordpress.com
 
 - 物品自身属性 vs 用户历史偏好数据
 
+
 * 基于项目的协同过滤推荐 vs 基于用户的协同过滤推荐
 
-balabala
+基于用户的协同过滤使用来自每一位用户的全部评分构成数据集。这种方法对于有上百万的用户和物品的情形来说，计算速度相当慢，同时面临计算资源有限的问题。
+
+基于项目的协同过滤推荐，允许计算任务预先执行，从而提高计算速度，同时也面临计算资源有限的问题。
+
+
 
 * 基于物品的协同推荐 - 测试数据
 
@@ -148,9 +162,11 @@ balabala
 	5,105,3.5
 	5,106,4.0
 
+
 * 基于物品的协同推荐 - 计算物品相似度
 
 .image sim_mat.png
+
 
 * 基于物品的协同推荐 - 用户评分数据
 
@@ -158,7 +174,7 @@ balabala
 
 评分向量
 
-.image pref.png 
+.image pref.png
 
 
 * 基于物品的协同推荐 - 推荐向量
@@ -166,6 +182,7 @@ balabala
 推荐向量等于协同矩阵与评分向量相乘
 
 .image rec_vec.png
+
 
 * 基于物品的协同推荐 - 归一化
 
@@ -175,7 +192,8 @@ balabala
 - i表示用户还没有评分过的物品
 - N表示所有与i相似的物品
 
-	对于用户u来说，物品i的推荐值等于其与所有物品n的相似度和用户u对物品n评分乘积的和除以所有物品n的相似度和
+对于用户u来说，物品i的推荐值等于其与所有物品n的相似度和用户u对物品n评分乘积的和除以所有物品n的相似度和
+
 
 * 基于物品的协同推荐 - 计算归一化向量
 
@@ -183,28 +201,167 @@ balabala
 
 .image norm_vec.png
 
+
 * 基于物品的协同推荐 - 计算推荐向量
 
 推荐值向量点除归一化向量
 
 .image rec_vec_norm.png
 
-* 基于用户的协同推荐
-
-.code -numbers recommmendations.py /START USER OMIT/,/END USER OMIT/
 
 * 基于物品的协同推荐
 
 .code -numbers recommmendations.py /START ITEM OMIT/,/END ITEM OMIT/
 
-* 自己实现
+
+* 基于用户的协同推荐
+
+.code -numbers recommmendations.py /START USER OMIT/,/END USER OMIT/
 
 
-* Mahout
+* MapReduce简介
+
+- 输入键值对(K1,V1)
+- Map函数作用于每个(K1,V1)，得到0个或多个键值对(K2,V2)
+- 为每个K2合并所有的V2
+- Reduce函数作用于每个(K2,V2)，得到0个或者多个键值对(K3,V3)
+
+
+* 分布式实现
+
+- 生成用户向量
+- 计算协同矩阵
+- 通过部分乘积计算矩阵乘
+- 形成推荐
+
+
+* 分布式实现 - 生成用户向量
+
+- 输入文件
+- map函数将输入文件解析成 uid pid pref
+- 框架将每个 uid 对应的 pid 收集到一起
+- reduce函数利用全部 pid 构建向量 vec，输出 uid 和 vec
+
+	1 {101:5.0,103:2.5,102:3.0}
+
+
+* 分布式实现 - 计算协同矩阵
+
+- 输入用户向量
+- map函数根据向量中的 pid 确定共现次数
+- 框架将每个 pid 对应的其他 pid 收集到一起
+- reduce函数利用全部 pid 构建向量 vec，输出 pid 和 vec
+
+	101 {106:2.0,104:4.0,103:4.0,105:2.0,107:1.0,102:3.0}
+
+
+* 分布式实现 - 通过部分乘积计算矩阵乘（1）
+
+难点：在一个计算过程中合并两种不同的数据：协同向量和偏好值。
+解决：对协同向量和偏好值做一层封装， VectorOrPrefWritable
+
+- 输入协同矩阵
+- map函数简单转发输入，vec 封装到 VectorOrPrefWritable
+- reduce函数直接保存
+
+- 输入用户向量
+- map函数输出 pid 和以VectorOrPrefWritable形式封装的 uid 和 pref
+- reduce函数直接保存
+
+
+* 分布式实现 - 通过部分乘积计算矩阵乘（2）
+
+- 输入前两步的输出
+- map函数什么也不做，直接输出
+- reduce函数将同一个 pid 的协同向量，所有用户和偏好值合并成 VectorAndPrefWritable
+
+	101 {106:2.0,104:4.0,103:4.0,105:2.0,101:NaN,107:1.0,102:3.0} [2, 1, 3, 5, 4]
+	 [2.0, 5.0, 2.5, 4.0, 5.0]
+
+
+* 分布式实现 - 形成推荐
+
+- 输入通过部分乘积计算矩阵乘（2）
+- map函数完成协同矩阵与每个用户偏好值的乘法
+- 框架按照 uid 将乘积汇集
+- reduce函数完成向量求和，得到最终推荐向量
+
+
+* Mahout简介
+
+.image https://pbs.twimg.com/profile_images/3167183321/3de058c8ba7c4d3b98407caaf8a28014_400x400.png 200 200
+
+[[http://mahout.apache.org/][Mahout]]是一个来自Apache的、开源的机器学习软件库。包含三大主题：推荐引擎、聚类、分类。
+
+
+* Mahout命令行使用
+
+	[uc@hz0096 bin]$ ./mahout
+	Running on hadoop, using /home/uc/hadoop/bin/hadoop and HADOOP_CONF_DIR=
+	MAHOUT-JOB: /home/uc/mahout/examples/target/mahout-examples-1.0-SNAPSHOT-job.jar
+	An example program must be given as the first argument.
+	Valid program names are:
+	  ...
+	  hmmpredict: : Generate random sequence of observations by given HMM
+	  itemsimilarity: : Compute the item-item-similarities for item-based collaborative filtering
+	  kmeans: : K-means clustering
+	  lucene.vector: : Generate Vectors from a Lucene index
+	  lucene2seq: : Generate Text SequenceFiles from a Lucene index
+	  matrixdump: : Dump matrix in CSV format
+	  matrixmult: : Take the product of two matrices
+	  recommendfactorized: : Compute recommendations using the factorization of a rating matrix
+	  recommenditembased: : Compute recommendations using item-based collaborative filtering
+	  ...
+
+
+* Mahout命令行使用
+
+	[uc@hz0096 bin]$ ./mahout recommenditembased
+	14/11/03 17:52:37 ERROR common.AbstractJob: Missing required option --similarityClassname
+	Missing required option --similarityClassname
+	Usage:
+	 [--input <input> --output <output> --numRecommendations <numRecommendations> --usersFile
+	 <usersFile> --itemsFile <itemsFile> --filterFile <filterFile> --userItemFile <userItemFile>
+	 --booleanData <booleanData> --maxPrefsPerUser <maxPrefsPerUser> --minPrefsPerUser
+	 <minPrefsPerUser> --maxSimilaritiesPerItem <maxSimilaritiesPerItem>
+	 --maxPrefsInItemSimilarity <maxPrefsInItemSimilarity> --similarityClassname
+	 <similarityClassname> --threshold <threshold> --outputPathForSimilarityMatrix
+	 <outputPathForSimilarityMatrix> --randomSeed <randomSeed> --sequencefileOutput
+	 --onlyGetSimilarityMatrix --help --tempDir <tempDir> --startPhase <startPhase>
+	 --endPhase <endPhase>] --similarityClassname (-s) similarityClassname Name of distributed
+	 similarity measures class to instantiate, alternatively use one of the predefined similarities
+	 ([SIMILARITY_COOCCURRENCE, SIMILARITY_LOGLIKELIHOOD, SIMILARITY_TANIMOTO_COEFFICIENT,
+	 SIMILARITY_CITY_BLOCK, SIMILARITY_COSINE, SIMILARITY_PEARSON_CORRELATION,
+	 SIMILARITY_EUCLIDEAN_DISTANCE])
+
+例如
+
+	./mahout recommenditembased --input /tmp/mahout/test/theme/ods/input/ --numRecommendations 100
+	--tempDir /tmp/mahout/test/theme/tmp/06 --output /tmp/mahout/test/theme/res/06
+	--similarityClassname SIMILARITY_COOCCURRENCE --startPhase 2 --endPhase 3
+
+
+* Mahout基于物品协同过滤计算流程
+
+.image mahout_recommendation_workflow.jpg
+
+
+* Mahout使用过程遇到的问题及解决
+
+问题：计算计算协同矩阵时，内存不够
+解决：对原始数据做采样，在采样数据上计算
+
 
 * 参考资料
 
-－ [[http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/][来源：探索推荐引擎内部的秘密，第 1 部分: 推荐引擎初探]]
-－ [[][]]
-* Q&A
+- [[http://www.ibm.com/developerworks/cn/web/1103_zhaoct_recommstudy1/][探索推荐引擎内部的秘密，第 1 部分: 推荐引擎初探]]
+- [[http://blog.csdn.net/fansy1990/article/details/8065007][Hadoop 实现协同过滤 (example in <Mahout in action> chapter 6) Part 1]]
+- [[http://blog.csdn.net/fansy1990/article/details/8064363][Hadoop 实现协同过滤 (example in <Mahout in action> chapter 6) Part 2]]
+- [[http://book.douban.com/subject/25837140/][Mahout实战]]
+- [[http://book.douban.com/subject/3288908/][集体编程的智慧]]
+- [[http://rgyq.blog.163.com/blog/static/31612538201487103649585/][基于item的推荐计算过程]]
+- [[http://rgyq.blog.163.com/blog/static/31612538201471344610872/][编译mahout with hadoop2.4.0]]
 
+
+* Q&A
+\...
